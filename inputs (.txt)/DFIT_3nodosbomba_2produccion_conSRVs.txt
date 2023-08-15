@@ -1,0 +1,168 @@
+- Modo de uso:
+- Para realizar comentarios o lineas que seran ignoradas empezar las mismas
+- con "-". 
+- Las lineas vacias tambien seran ignoradas.
+- Respetar la definicion de variables como "nombreVariables = valor" (Notar
+- el espacio que se deja antes y despues del igual)
+- Se puede cambiar el nombre de las propiedades por cualquiera cosa.
+- No cambiar el orden de las propiedades a como estan escritas.
+- Si se agregan propiedades o se modifica el orden, hay que modificar las 
+- funciones de las propiedades del main.
+- Los limites de la variable "depth" en propiedades constitutivas tienen 
+- que coincidir con 0 y el ancho en Z de todo el dominio. Solo cambia si se
+- cambia el dominio (no si se usa una malla mas refinada por ejemplo).
+- El tiempo total de corrida no puede superar al "tiempoBomba" + 
+- "tiempoISIP" + "tiempoProduccion". Si puede ser menor o igual.
+------------------------    CORRIDA DE PRUEBA    --------------------------
+---------------------------------------------------------------------------
+-Malla utilizada:
+---------------------------------------------------------------------------
+selectedMesh = DFIT_SW_FINA_17_5_2022.mat
+---------------------------------------------------------------------------
+-Propiedades Constitutivas: [Mpsi][mm]
+---------------------------------------------------------------------------
+Ev = [1.87 1.87]
+Eh = [2.95 2.95]
+NUv = [0.19 0.19]
+NUh = [0.32 0.32]
+depth = [0 36000]
+
+EvL = []
+EhL = []
+NUvL = []
+NUhL = []
+depthL = []
+eL = []
+eT = []
+
+---------------------------------------------------------------------------
+-Propiedades Poroelasticas: [psi][][][psi][psi]
+---------------------------------------------------------------------------
+pPoral = 9952.14
+m = [1 1 1 0 0 0]
+poro = 0.11
+Ks = 6.58e6
+Kf = 418723.95
+
+---------------------------------------------------------------------------
+-Propiedades del Fluido poral: [miliDarcy][Pa*s]
+---------------------------------------------------------------------------
+permShale = 0.0001
+permBarreras = 0.01
+permBarrerasVertical = 0.01
+permSRV = 10
+mu_dinamico = 8.9e-4
+
+---------------------------------------------------------------------------
+-Propiedades del Fluido fracturante: [Pa*s]
+---------------------------------------------------------------------------
+MU = 8.9e-4
+preCondCTFluidos = 1e7
+
+---------------------------------------------------------------------------
+-Cargas tectonicas: [psi]
+---------------------------------------------------------------------------
+ShX = -11603
+ShY = -11168
+SvZ = -11748
+TauXY = 0
+TauYZ = 0
+TauXZ = 0
+
+ShXL = 0
+ShYL = 0
+SvZL = 0
+TauXYL = 0
+TauYZL = 0
+TauXZL = 0
+
+---------------------------------------------------------------------------
+-Propiedades Temporales: [s]
+---------------------------------------------------------------------------
+drainTimes = 10
+initTimes = 5
+deltaTdrainTimes = 1000000
+deltaT = 0.001
+deltaTMax = 2.5
+
+tiempoISIP = 100
+deltaTISIP = 20
+tiempoProduccion = 500
+deltaTProduccionMax = 100
+
+---------------------------------------------------------------------------
+-Propiedades del algoritmo:
+---------------------------------------------------------------------------
+toleranciaU = 0.005/1
+toleranciaP = 0.005/1
+toleranciaCohesivos = 0.01/1
+nIterDiv = 10
+nIterFast = 4
+nIterSlow = 8
+precondCT = 1e7
+
+---------------------------------------------------------------------------
+-Propiedades de la bomba: [BPM][s][mm]
+---------------------------------------------------------------------------
+-cada fila es el caudal de un nodo bomba. Puede haber uno o mas.
+-El primer nodo es aquel por el que sale caudal en producción.
+Q =  [8   8; 16  16; 10  10]
+-cada fila es el tiempo de inyeccion en un nodo bomba
+tQ = [0   5; 0   8; 2   10]
+-cada fila es la posicion de un nodo bomba
+posNodoBomba = [0 18000 18000; 9000 18000 18000; 18000 18000 18000]
+
+---------------------------------------------------------------------------
+-Propiedades de produccion: [psi][s][BPM]
+---------------------------------------------------------------------------
+- Si tProduccion se queda mas corto que el tiempo de produccion seteado en 
+- la parte de propiedades temporales, se toma la ultima presion cargada en 
+- el vector.
+
+modo = p
+pProduccion = [8500 6500; 8500 6500]
+QProduccion = [-0.07/200 -0.01/200; -0.07/200 -0.01/200]
+tProduccion = [0    500; 0     200]
+frontImpermeable = Y
+nNodosProduccion = [1 3]
+
+---------------------------------------------------------------------------
+-Propiedades de los cohesivos: [][grad][psi][psi*in^0.5][psi][psi*in^0.5][psi][psi*in^0.5][Mpsi][]
+---------------------------------------------------------------------------
+npiCohesivos = 4
+anguloDilatancia = 0
+-Propiedades del "shale":
+tensionRoturaCohesivo = 1039.58
+K1c = 513.58
+-Propiedades del "limestone":
+tensionRoturaCohesivoL = []
+K1cL = []
+-Propiedades de la "interface":
+tensionRoturaCohesivoInter = []
+K1cI = []
+EvI = []
+NUI = []
+
+-Recomendaciones: 
+-K1cI = min(K1cL,K1c)/weakFactor --> Es decir, que sea mas chico que el minimo entre esos dos. 
+-EvI = min(Ev,EvL)/2
+-NUvI = NUvL
+
+---------------------------------------------------------------------------
+-Propiedades del propante: [Mpsi][][miliDarcy][%]
+---------------------------------------------------------------------------
+propanteKey = Y
+EPropante = 10.4
+NuPropante = 0.25
+kappaPropante = 1000
+hPropantePorcentaje = 50
+
+---------------------------------------------------------------------------
+-Volumen de SRV: [m][m][m]
+---------------------------------------------------------------------------
+-Nota: fijarse bien que las coordenadas que depende de los elementos de 
+-las mallas.
+SRVKey = Y
+dX = [0 34]
+dY = [12 24]
+dZ = [9 27]

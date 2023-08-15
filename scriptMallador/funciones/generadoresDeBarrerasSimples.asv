@@ -1,0 +1,27 @@
+function [nodesNew,elements] = generadoresDeBarrerasSimples(posBarrera1,espesorBarrera1,fractura,cohesivos,nodes,elements,tol,debugPlots)
+
+    % Extraer las coordenadas Z de los nodos
+    X = nodes(:,1);
+    Y = nodes(:,2);
+    Z = nodes(:, 3);
+    
+    xFrac = fractura.X1.posXFractura;
+    
+    % Encontrar el nodo más cercano por encima de la barrera
+    nodosArriba = find(Z > posBarrera1);
+    [~, indiceArriba] = min(Z(nodosArriba));
+    nodoArriba = nodes(nodosArriba(indiceArriba), :);
+    
+    % Encontrar el nodo más cercano por debajo de la barrera
+    nodosAbajo = find(Z < posBarrera1);
+    [~, indiceAbajo] = max(Z(nodosAbajo));
+    nodoAbajo = nodes(nodosAbajo(indiceAbajo), :);
+
+    logAbajo = (ismembertol(Z,nodoAbajo(3),tol) & ismembertol(X,xFrac,tol) & Y <= fractura.X1.posYFractura(2) & Y >= fractura.X1.posYFractura(1) );
+    logArriba = (ismembertol(Z,nodoArriba(3),tol) & ismembertol(X,xFrac,tol) & Y <= fractura.X1.posYFractura(2) & Y >= fractura.X1.posYFractura(1)  );
+
+    espesorInicial = (nodoArriba(3)-nodoAbajo(3));
+
+    deltaArriba = nodosArriba(3)-posBarrera1;
+end
+
