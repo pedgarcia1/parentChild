@@ -17,7 +17,7 @@
 ---------------------------------------------------------------------------
 -Malla utilizada:
 ---------------------------------------------------------------------------
-selectedMesh = ParentChild.mat
+selectedMesh = ParentChild_prueba_nuevaBarrera_v3.mat
 ---------------------------------------------------------------------------
 -Propiedades Constitutivas: [Mpsi][mm]
 ---------------------------------------------------------------------------
@@ -25,14 +25,14 @@ Ev = [1.87 1.87]
 Eh = [2.95 2.95]
 NUv = [0.19 0.19]
 NUh = [0.32 0.32]
-depth = [0 544000]
+depth = [0 228000]
 
 EvL = [1.87 1.87]*2
 EhL = [2.95 2.95]*2
 NUvL = [0.19 0.19]
 NUhL =  [0.32 0.32]
-depthL = [180000 362000]
-eL = [2000 2000]
+depthL = [83 145]*1e3
+eL = [1 1]*1e3
 eT = [100 100]
 
 ---------------------------------------------------------------------------
@@ -47,9 +47,10 @@ Kf = 418723.95
 ---------------------------------------------------------------------------
 -Propiedades del Fluido poral: [miliDarcy][Pa*s]
 ---------------------------------------------------------------------------
-permShale = 0.000001
-permBarreras = 0.01
-permBarrerasVertical = 0.01
+permShale = 0.00001
+- antes 0.00001 pruebo a ver si converge en ISIP
+permBarreras = 0.00000001
+permBarrerasVertical = 0.00000001
 permSRV = 1
 mu_dinamico = 8.9e-4
 
@@ -83,11 +84,11 @@ drainTimes = 10
 initTimes = 5
 deltaTdrainTimes = 1000000
 deltaT = 0.001
-deltaTMax = 2.5
+deltaTMax = 30
 
-tiempoISIP = 100
-deltaTISIP = 20
-deltaTProduccionMax = 3600*24*30
+tiempoISIP = 120
+deltaTISIP = 0.1
+deltaTProduccionMax = 3600*24*2
 
 ---------------------------------------------------------------------------
 -Propiedades del algoritmo:
@@ -105,11 +106,16 @@ precondCT = 1e7
 ---------------------------------------------------------------------------
 -Cada fila es el caudal de un nodo bomba. Hay un nodo bomba por fractura.
 -Puede haber una o mas fracturas (la idea es que hayan al menos 2).
-Q =  [60 60; 60 60]
+Q =  [15 15; 15 15]
 -Cada fila es el tiempo de inyeccion en un nodo bomba
-tQ = [0 30; 0 30]
--cada fila es la posicion de un nodo bomba
-posNodoBomba = [360000 1240000 272000; 360000 380000 272000]
+tQ = [0 180; 0 180]
+-Cada fila es la posicion de un nodo bomba
+posNodoBomba = [152 152 114; 152 532 114]*1000
+
+---------------------------------------------------------------------------
+-Propiedades de los nodos monitores: [mm]
+---------------------------------------------------------------------------
+posNodMonitores = [228 342 114;76 342 114;152 532 114;152 342 114;152 456 114;152 228 114;228 152 114;76 152 114;152 76 114;152 608 114;228 532 114]*1000
 
 ---------------------------------------------------------------------------
 -Propiedades de produccion: [psi][s][BPM]
@@ -121,10 +127,10 @@ posNodoBomba = [360000 1240000 272000; 360000 380000 272000]
 - Cada fila de pProduccion, QProduccion, tProduccion es para un nodo 
 - bomba / para una fractura distinta.
 
-modo = p
+modo = q
 pProduccion = [8872	7178	4761	4500; 8872	7178	4761	4500]
 QProduccion = [-0.07/200 -0.01/200; -0.07/200 -0.01/200]
-tProduccion = [ 0	118*24*3600	300*24*3600	428*24*3600;  0	118*24*3600	300*24*3600	428*365*24*3600]
+tProduccion = [ 0	2*365*24*3600;  0	2*365*24*3600]
 frontImpermeable = Y
 
 ---------------------------------------------------------------------------
@@ -136,8 +142,8 @@ anguloDilatancia = 0
 tensionRoturaCohesivo = 1039.58
 K1c = 513.58
 -Propiedades del "limestone":
-tensionRoturaCohesivoL = 1039.58
-K1cL = 513.58
+tensionRoturaCohesivoL = 1039.58e3
+K1cL = 513.58e3
 -Propiedades de la "interface":
 tensionRoturaCohesivoInter = 1039.58*10
 K1cI = 513.58
@@ -150,17 +156,18 @@ NUI = 0.25
 -NUvI = NUvL
 
 ---------------------------------------------------------------------------
--Propiedades del propante: [Mpsi][][miliDarcy][---------------------------------------------------------------------------
+-Propiedades del propante: [Mpsi][][miliDarcy][%]
+---------------------------------------------------------------------------
 propanteKey = Y
 EPropante = 10.4
 NuPropante = 0.25
 kappaPropante = 1000
-hPropantePorcentaje = 50
+hPropantePorcentaje = 30
 
 ---------------------------------------------------------------------------
 -Volumen de SRV: [m][m][m]
 ---------------------------------------------------------------------------
 SRVKey = Y
-dX = [330 390; 330 390]
-dY = [180 580; 1040 1440]
-dZ = [182 362; 182 362]
+dX = [76 228; 76 228]
+dY = [76 228; 456 608]
+dZ = [76 152; 76 152]

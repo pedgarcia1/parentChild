@@ -1,0 +1,36 @@
+versiones
+
+V5
+fin fractura
+diverge initTimes
+15 min a 60 BPM excede limites de fractura 
+
+V7
+ParentChild_Pedro_5.txt
+fix restart
+debug initTimes (antes no convergieron) pasar el delta t a 5s
+no funciona, sigue sin converger. hace exactamente lo mismo que con 20s delta t
+preguntar pablo
+al final para que converga ISIP el caudal quedao 60BPM
+OJO PORQUE CAMBIE EL DELTAT DE DIVERGENCIA volver a poner en 1e-9
+
+V9 ???
+agrega verificacion de SRV
+ParentChild_Pedro_7.txt tiene los SRVs configurados alrededor de los nodos bomba
+
+V9 y V10 
+pruebas con distinta distancai entre nodos bomba
+
+V11
+prueba de cambios en la matriz Kperm
+mirar y plotear KCcell
+
+V12
+variacion de permeabilidad sgun tensiones
+
+OTRO
+
+% para plotear SRV, meshInfo.elements(SRVProperties.elementsIndex,:)
+% chequear que este seleccionando bien el SRV, con los datos del txt
+
+
