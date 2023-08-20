@@ -13,6 +13,7 @@ no funciona, sigue sin converger. hace exactamente lo mismo que con 20s delta t
 preguntar pablo
 al final para que converga ISIP el caudal quedao 60BPM
 OJO PORQUE CAMBIE EL DELTAT DE DIVERGENCIA volver a poner en 1e-9
+NO FUNCIONA convergencia de ISIP
 
 V9 ???
 agrega verificacion de SRV
@@ -27,6 +28,10 @@ mirar y plotear KCcell
 
 V12
 variacion de permeabilidad sgun tensiones
+idem KPermCell V11
+
+V13
+copio V12 intento V7 de nuevo, convergencia de ISIP automatica
 
 OTRO
 
