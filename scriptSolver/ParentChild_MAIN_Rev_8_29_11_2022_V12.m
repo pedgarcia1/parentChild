@@ -1,5 +1,5 @@
 clear;clc;close all; format shortg;
-set(0, 'DefaultFigureWindowStyle', 'docked'); warning('off', 'MATLAB:Figure:SetPositionDocked');
+set(0, 'DefaultFigureWindowStyle', 'docked'); addpath('funciones');
 tStart=tic;
 %-------------------------------------------------------------------------%
 %% %%%%%%%%%%%%%%%%%%%      MAIN Parent-Child       %%%%%%%%%%%%%%%%%%%% %%
@@ -8,7 +8,7 @@ tStart=tic;
 % Variables de inicio de corrida.
 guardarCorrida    = 'Y'; % Si se quiere guardar la corrida. "Y" o "N".
 direccionGuardado = 'C:\Users\pgarcia\Documents\parentChild\Resultados de corridas (.mat)\'; % Direccion donde se guarda la informacion.
-nombreCorrida     = 'ParentChild_PermS'; % Nombre de la corrida. La corrida se guarda en la carpeta "Resultado de corridas" en una subcarpeta con este nombre.
+nombreCorrida     = 'ParentChild_Perm_S'; % Nombre de la corrida. La corrida se guarda en la carpeta "Resultado de corridas" en una subcarpeta con este nombre.
 
 cargaDatos     = 'load'; % Forma en la que se cargan las propiedades de entrada. "load" "test" "default" "change".
 archivoLectura = 'C:\Users\pgarcia\Documents\parentChild\inputs (.txt)\ParentChild_Pedro_12.txt'; % Nombre del archivo con las propiedades de entrada. 
@@ -16,15 +16,18 @@ archivoLectura = 'C:\Users\pgarcia\Documents\parentChild\inputs (.txt)\ParentChi
 tSaveParcial   = []; % Guardado de resultados parciales durante la corrida. Colocar los tiempos en los cuales se quiere guardar algun resultado parcial.
 
 restart            = 'Y'; % Si no queremos arrancar la simulacion desde el principio sino que desde algun punto de partida 'Y' en caso contrario 'N'.
-direccionRestart   = 'Resultados de corridas\ParentChild_Pedro\';
-propiedadesRestart = 'resultadosSRVcell_1812.mat';
+direccionRestart   = 'C:\Users\pgarcia\Documents\parentChild\Resultados de corridas (.mat)\ParentChild_Pedro\';
+propiedadesRestart = 'resultadosFinISIP_1_ParentChild_Pedro.mat';
 
 % Variables del post - procesado.
-tiempoArea      = 1300; % Tiempo en el que se quiere visualizar la forma del area de fractura.
+tiempoArea      = 0; % Tiempo en el que se quiere visualizar la forma del area de fractura.
 tiempoTensiones = 0; % Tiempo en el que se quiere visualizar las tensiones. Tiempo 0 equivale al final de los drainTimes.
 keyPlots        = true; % Para plotear graficos intermedios. Separacion normal entre caras, presion de fractura y errores de convergencia.
 
-KPermCell{1} = [];
+wantBuffPermeability = true; % false: la permeabilidad no se altera con el campo de tensiones de la etapa de fractura.
+KeyInicioIsip    = true; % ???
+permFactor = 1e5;
+
 %-------------------------------------------------------------------------%
 %%                             PRE - PROCESO                             %%
 %-------------------------------------------------------------------------%
@@ -53,6 +56,7 @@ produccionProperties = setProduccionProperties3(cargaDatos,archivoLectura);
 propanteProperties   = setPropanteProperties(cargaDatos,physicalProperties,meshInfo,archivoLectura);
 SRVProperties        = setSRVProperties2(cargaDatos,'N',meshInfo,archivoLectura);
 % monitoresProperties  = setMonitoresProperties(meshInfo,cargaDatos,archivoLectura,1);
+KPermCell{1} = []; % celda de datos para plotStagesSRV
 %%
 %-------------------------------------------------------------------------%
 %%%                             PARAMETROS                              %%%
@@ -461,13 +465,33 @@ while algorithmProperties.elapsedTime < temporalProperties.tiempoTotalCorrida
         KPermCell{size(KPermCell,1),2} = [];
         KPermCell{size(KPermCell,1),3} = 'frac';
         KPermCell{size(KPermCell,1)+1,1} = [];
-    elseif strcmpi(SRVProperties.key,'Y') && productionKC(iFractura) == 1 && algorithmProperties.elapsedTime >= temporalProperties.tInicioProduccion(iFractura) % Se establece el valor de permeabilidad mas elevado para el SRV que se activa durante la produccion. 
+    elseif strcmpi(SRVProperties.key,'Y') && productionKC(iFractura) == 1 && algorithmProperties.elapsedTime >= temporalProperties.tInicioProduccion(iFractura) % Se establece el valor de permeabilidad mas elevado para el SRV que se activa durante la produccion.
+        if KeyInicioIsip
+            KeyInicioIsip=false; %% Aca vamos a generar la Curva y desp usamos esa
+            calcTensionesenInicioISIP
+            calcTensionesenDrainTimes
+            DeltaPHidro=abs(abs(tensionHidroDrainTimes(Elem))-abs(tensionHidroInicioIsip(Elem))); %% diferencia de tensionesH entre el itime 2 y donde arranca el Isip
+            %%Elem es el elemento Bomba
+        end
+        calcTensionesenISIP
+        if wantBuffPermeability
+            ImproveFactor=permFactor+(1-permFactor/DeltaPHidro)*(tensionHidroDrainTimes-tensionHidroIsip').*((tensionHidroDrainTimes-tensionHidroIsip')>0);
+            ImproveFactor=(ImproveFactor>1).*ImproveFactor+(ImproveFactor<1).*1;
+        else
+            ImproveFactor = ones(paramDiscEle.nel,1);
+        end
+        %            improvePerm=physicalProperties.fluidoPoral.kappaIntShale;
         auxSRV.elementsIndex=SRVProperties.elementsIndex{iFractura};
-        Kperm        = getMatrizPermeabilidad(physicalProperties,meshInfo,auxSRV,'produccion','Y' );
-        KC           = getTensor(meshInfo,paramDiscEle,pGaussParam,1,1,Kperm,'KC');
+        Kperm        = getMatrizPermeabilidadPorElemISIP(physicalProperties,meshInfo,auxSRV,ImproveFactor,'ISIP','N' );
+        KC           = getTensor(meshInfo,paramDiscEle,pGaussParam,1,1,Kperm,'KC'); %improvePerm.*factor o solo factor arriba??
         productionKC(iFractura) = 0;
-        KPermCell{size(KPermCell,1),1} = Kperm; 
-        KPermCell{size(KPermCell,1),2} = auxSRV.elementsIndex; 
+        
+%         auxSRV.elementsIndex=SRVProperties.elementsIndex{iFractura};
+%         Kperm        = getMatrizPermeabilidad(physicalProperties,meshInfo,auxSRV,'produccion','Y' );
+%         KC           = getTensor(meshInfo,paramDiscEle,pGaussParam,1,1,Kperm,'KC');
+%         productionKC(iFractura) = 0;
+        KPermCell{size(KPermCell,1),1} = Kperm;
+        KPermCell{size(KPermCell,1),2} = auxSRV.elementsIndex;
         KPermCell{size(KPermCell,1),3} = 'produccion';
         KPermCell{size(KPermCell,1)+1,1} = [];
     end
@@ -688,7 +712,7 @@ while algorithmProperties.elapsedTime < temporalProperties.tiempoTotalCorrida
 
             if keyPlots == true
                 figure(han1)
-                set(han1,'Position',[1 41 768 748.8]);
+%                 set(han1,'Position',[1 41 768 748.8]);
                 plotError
                 figure(han2)
                 
@@ -852,7 +876,7 @@ while algorithmProperties.elapsedTime < temporalProperties.tiempoTotalCorrida
     
     if keyPlots == true
         figure(han2)
-        set(han2,'Position',[769.8 41.8 766.4 740.8]);
+%         set(han2,'Position',[769.8 41.8 766.4 740.8]);
         clf
         subplot(1,2,1)
         bandplot(meshInfo.cohesivos.elements,meshInfo.nodes,meshInfo.cohesivos.dNTimes(:,:,iTime))
