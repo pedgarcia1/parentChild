@@ -11,7 +11,7 @@ direccionGuardado = 'C:\Users\pgarcia\Documents\parentChild\Resultados de corrid
 nombreCorrida     = 'ParentChild_Perm_S'; % Nombre de la corrida. La corrida se guarda en la carpeta "Resultado de corridas" en una subcarpeta con este nombre.
 
 cargaDatos     = 'load'; % Forma en la que se cargan las propiedades de entrada. "load" "test" "default" "change".
-archivoLectura = 'C:\Users\pgarcia\Documents\parentChild\inputs (.txt)\ParentChild_Pedro_12.txt'; % Nombre del archivo con las propiedades de entrada. 
+archivoLectura = 'C:\Users\pgarcia\Documents\parentChild\inputs (.txt)\ParentChild_Pedro_14.txt'; % Nombre del archivo con las propiedades de entrada. 
 
 tSaveParcial   = []; % Guardado de resultados parciales durante la corrida. Colocar los tiempos en los cuales se quiere guardar algun resultado parcial.
 

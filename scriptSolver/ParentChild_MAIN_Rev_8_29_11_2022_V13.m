@@ -1,4 +1,4 @@
-% clear;clc;close all; format shortg;
+clear;clc;close all; format shortg;
 set(0, 'DefaultFigureWindowStyle', 'docked'); addpath('funciones');
 tStart=tic;
 %-------------------------------------------------------------------------%
@@ -8,16 +8,16 @@ tStart=tic;
 % Variables de inicio de corrida.
 guardarCorrida    = 'Y'; % Si se quiere guardar la corrida. "Y" o "N".
 direccionGuardado = 'C:\Users\pgarcia\Documents\parentChild\Resultados de corridas (.mat)\'; % Direccion donde se guarda la informacion.
-nombreCorrida     = 'ParentChild_Perm_S'; % Nombre de la corrida. La corrida se guarda en la carpeta "Resultado de corridas" en una subcarpeta con este nombre.
+nombreCorrida     = 'ParentChild_ISIP'; % Nombre de la corrida. La corrida se guarda en la carpeta "Resultado de corridas" en una subcarpeta con este nombre.
 
 cargaDatos     = 'load'; % Forma en la que se cargan las propiedades de entrada. "load" "test" "default" "change".
-archivoLectura = 'C:\Users\pgarcia\Documents\parentChild\inputs (.txt)\ParentChild_Pedro_12.txt'; % Nombre del archivo con las propiedades de entrada. 
+archivoLectura = 'C:\Users\pgarcia\Documents\parentChild\inputs (.txt)\ParentChild_Pedro_13.txt'; % Nombre del archivo con las propiedades de entrada. 
 
 tSaveParcial   = []; % Guardado de resultados parciales durante la corrida. Colocar los tiempos en los cuales se quiere guardar algun resultado parcial.
 
-restart            = 'N'; % Si no queremos arrancar la simulacion desde el principio sino que desde algun punto de partida 'Y' en caso contrario 'N'.
+restart            = 'Y'; % Si no queremos arrancar la simulacion desde el principio sino que desde algun punto de partida 'Y' en caso contrario 'N'.
 direccionRestart   = 'C:\Users\pgarcia\Documents\parentChild\Resultados de corridas (.mat)\ParentChild_Pedro\';
-propiedadesRestart = 'resultadosFinISIP_1_ParentChild_Pedro.mat';
+propiedadesRestart = 'resultadosFinFractura_2_ParentChild_Pedro.mat';
 
 % Variables del post - procesado.
 tiempoArea      = 0; % Tiempo en el que se quiere visualizar la forma del area de fractura.
@@ -57,6 +57,7 @@ propanteProperties   = setPropanteProperties(cargaDatos,physicalProperties,meshI
 SRVProperties        = setSRVProperties2(cargaDatos,'N',meshInfo,archivoLectura);
 % monitoresProperties  = setMonitoresProperties(meshInfo,cargaDatos,archivoLectura,1);
 KPermCell{1} = []; % celda de datos para plotStagesSRV
+temporalProperties.ISIPDivergence.flag = false;
 %%
 %-------------------------------------------------------------------------%
 %%%                             PARAMETROS                              %%%
@@ -545,7 +546,10 @@ while algorithmProperties.elapsedTime < temporalProperties.tiempoTotalCorrida
             Q = sparse(paramDiscEle.nDofTot_P,1); % Durante el ISIP valor cero en los caudales.
             
         else % Empezamos la produccion.
-            if strcmpi(produccionProperties.modoProduc,'p') % Si fijamos una contrapresion para producir.
+            if temporalProperties.ISIPDivergence.flag % Chequeo si hubo divergencia durante el ISIP
+                % Set produccion por caudal segun temporalProperties.ISIPDivergence.q
+                Q       = sparse(bombaProperties.nodoBomba(iFractura),1,temporalProperties.ISIPDivergence.q,paramDiscEle.nDofTot_P,1);
+            elseif strcmpi(produccionProperties.modoProduc,'p') % Si fijamos una contrapresion para producir.
                 Q       = sparse(paramDiscEle.nDofTot_P,1); % Solo se pre aloca el vector porque no se conoce. El solver lo determina en funcion a la contrapresion de produccion.
             elseif strcmpi(produccionProperties.modoProduc,'q') % Si fijamos un caudal cte de produccion.
                 tProduc = algorithmProperties.elapsedTime - temporalProperties.tFinalISIP(iFractura);
@@ -735,9 +739,17 @@ while algorithmProperties.elapsedTime < temporalProperties.tiempoTotalCorrida
             nIter           = 0;
             disp(['Paso las ',num2str(algorithmProperties.nIterDiv),' iteraciones, divirgió, se reduce el timestep a la mitad y se comienza nuevamente'])
             deltaT          = deltaT/2;
-            if deltaT <= 1e-9
-                warning 'Error: deltaT <= 1e-9. Posible divergencia eterna. Revisar parametros.';
-                assert(deltaT > 1e-9)
+            if deltaT <= 5e-3
+                fprintf('Error: deltaT <= 1e-9. Posible divergencia eterna. Revisar parametros. \n');
+%                 assert(deltaT > 1e-9)
+                if algorithmProperties.elapsedTime < temporalProperties.tInicioProduccion(iFractura) % Chequeo si estoy en ISIP de iFractura
+                    temporalProperties.ISIPDivergence.tiempoExtraFractura = 5;
+                    temporalProperties.tInicioISIP(iFractura) = temporalProperties.tInicioISIP(iFractura) + temporalProperties.ISIPDivergence.tiempoExtraFractura;
+                    temporalProperties.tFinalFrac(iFractura) = temporalProperties.tFinalFrac(iFractura) + temporalProperties.ISIPDivergence.tiempoExtraFractura;
+                    temporalProperties.ISIPDivergence.flag = true;
+                    temporalProperties.ISIPDivergence.q = 5*0.0026497882488*1e9; % 5 BPM a mm3/s
+                    error = convergido; % convergencia para salir del while
+                end
             end
             temporalProperties.deltaTs(iTime) = deltaT;
             display(deltaT);
