@@ -1,4 +1,4 @@
-% clear;clc;close all; format shortg;
+clear;clc;close all; format shortg;
 set(0, 'DefaultFigureWindowStyle', 'docked'); addpath('funciones');
 tStart=tic;
 %-------------------------------------------------------------------------%
@@ -11,7 +11,7 @@ direccionGuardado = 'C:\Users\pgarcia\Documents\parentChild\Resultados de corrid
 nombreCorrida     = 'ParentChild_Perm_S'; % Nombre de la corrida. La corrida se guarda en la carpeta "Resultado de corridas" en una subcarpeta con este nombre.
 
 cargaDatos     = 'load'; % Forma en la que se cargan las propiedades de entrada. "load" "test" "default" "change".
-archivoLectura = 'C:\Users\pgarcia\Documents\parentChild\inputs (.txt)\ParentChild_Pedro_14.txt'; % Nombre del archivo con las propiedades de entrada. 
+archivoLectura = 'C:\Users\pgarcia\Documents\parentChild\inputs (.txt)\ParentChild_Pedro_12.txt'; % Nombre del archivo con las propiedades de entrada. 
 
 tSaveParcial   = []; % Guardado de resultados parciales durante la corrida. Colocar los tiempos en los cuales se quiere guardar algun resultado parcial.
 
@@ -56,7 +56,7 @@ produccionProperties = setProduccionProperties3(cargaDatos,archivoLectura);
 propanteProperties   = setPropanteProperties(cargaDatos,physicalProperties,meshInfo,archivoLectura);
 SRVProperties        = setSRVProperties2(cargaDatos,'N',meshInfo,archivoLectura);
 % monitoresProperties  = setMonitoresProperties(meshInfo,cargaDatos,archivoLectura,1);
-KPermCell{1} = []; % celda de datos para plotStagesSRV
+SRVProperties.KPermCell{1} = []; % celda de datos para plotStagesSRV
 %%
 %-------------------------------------------------------------------------%
 %%%                             PARAMETROS                              %%%
@@ -214,7 +214,7 @@ iSaveParcial = 1;
 flagSaveFrac = ones(bombaProperties.nBombas,1);
 flagSaveISIP = ones(bombaProperties.nBombas,1);
 flagSaveProduccion = ones(bombaProperties.nBombas,1);
-restartKC    = 1; %ones(bombaProperties.nBombas,1);
+restartKC    = ones(bombaProperties.nBombas,1);
 productionKC = ones(bombaProperties.nBombas,1);
 
 iDeadFlag = 1;
@@ -457,14 +457,12 @@ while algorithmProperties.elapsedTime < temporalProperties.tiempoTotalCorrida
     display(iTime);
  
     %% Cambio de KC.
-    if restartKC==1 && iTime>temporalProperties.drainTimes
+    if restartKC(iFractura) ==1 && iTime>temporalProperties.drainTimes
         Kperm     = getMatrizPermeabilidad(physicalProperties,meshInfo,SRVProperties,'frac','Y' );                                                                                   % Luego de terminada una produccion (con permeabilidad de SRV), se vuelve a poner la permeabilidad (baja) de matriz.
         KC        = getTensor(meshInfo,paramDiscEle,pGaussParam,1,1,Kperm,'KC');
-        restartKC= 0;
-        KPermCell{size(KPermCell,1),1} = Kperm; 
-        KPermCell{size(KPermCell,1),2} = [];
-        KPermCell{size(KPermCell,1),3} = 'frac';
-        KPermCell{size(KPermCell,1)+1,1} = [];
+        restartKC(iFractura) = 0;
+        SRVProperties.KPermCell{size(SRVProperties.KPermCell,1),1} = Kperm; SRVProperties.KPermCell{size(SRVProperties.KPermCell,1),2} = []; SRVProperties.KPermCell{size(SRVProperties.KPermCell,1),3} = 'frac'; SRVProperties.KPermCell{size(SRVProperties.KPermCell,1),4} = iFractura;
+        SRVProperties.KPermCell{size(SRVProperties.KPermCell,1)+1,1} = [];
     elseif strcmpi(SRVProperties.key,'Y') && productionKC(iFractura) == 1 && algorithmProperties.elapsedTime >= temporalProperties.tInicioProduccion(iFractura) % Se establece el valor de permeabilidad mas elevado para el SRV que se activa durante la produccion.
         if KeyInicioIsip
             KeyInicioIsip=false; %% Aca vamos a generar la Curva y desp usamos esa
@@ -490,10 +488,8 @@ while algorithmProperties.elapsedTime < temporalProperties.tiempoTotalCorrida
 %         Kperm        = getMatrizPermeabilidad(physicalProperties,meshInfo,auxSRV,'produccion','Y' );
 %         KC           = getTensor(meshInfo,paramDiscEle,pGaussParam,1,1,Kperm,'KC');
 %         productionKC(iFractura) = 0;
-        KPermCell{size(KPermCell,1),1} = Kperm;
-        KPermCell{size(KPermCell,1),2} = auxSRV.elementsIndex;
-        KPermCell{size(KPermCell,1),3} = 'produccion';
-        KPermCell{size(KPermCell,1)+1,1} = [];
+        SRVProperties.KPermCell{size(SRVProperties.KPermCell,1),1} = Kperm; SRVProperties.KPermCell{size(SRVProperties.KPermCell,1),2} = auxSRV.elementsIndex; SRVProperties.KPermCell{size(SRVProperties.KPermCell,1),3} = 'produccion'; SRVProperties.KPermCell{size(SRVProperties.KPermCell,1),4} = iFractura;
+        SRVProperties.KPermCell{size(SRVProperties.KPermCell,1)+1,1} = [];
     end
 
 %     if restartKC(iFractura) == 1 && iTime>temporalProperties.drainTimes && (iFractura==1 || (algorithmProperties.elapsedTime >= temporalProperties.tFinalProduccion(iFractura-1))) % Durante los drain times la permeabilidad esta alta para acelerar el estado estacionario. Aca se establecen los valores correctos para shale y barreras.
