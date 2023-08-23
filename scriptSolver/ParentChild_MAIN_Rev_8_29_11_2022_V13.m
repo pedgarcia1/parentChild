@@ -549,6 +549,8 @@ while algorithmProperties.elapsedTime < temporalProperties.tiempoTotalCorrida
             if temporalProperties.ISIPDivergence.flag % Chequeo si hubo divergencia durante el ISIP
                 % Set produccion por caudal segun temporalProperties.ISIPDivergence.q
                 Q       = sparse(bombaProperties.nodoBomba(iFractura),1,temporalProperties.ISIPDivergence.q,paramDiscEle.nDofTot_P,1);
+                temporalProperties.ISIPDivergence.flag = false; 
+                deltaT = temporalProperties.ISIPDivergence.tiempoExtraFractura/2;
             elseif strcmpi(produccionProperties.modoProduc,'p') % Si fijamos una contrapresion para producir.
                 Q       = sparse(paramDiscEle.nDofTot_P,1); % Solo se pre aloca el vector porque no se conoce. El solver lo determina en funcion a la contrapresion de produccion.
             elseif strcmpi(produccionProperties.modoProduc,'q') % Si fijamos un caudal cte de produccion.

@@ -1,4 +1,4 @@
-% clear;clc;close all; format shortg;
+clear;clc;close all; format shortg;
 set(0, 'DefaultFigureWindowStyle', 'docked'); addpath('funciones');
 tStart=tic;
 %-------------------------------------------------------------------------%
@@ -214,7 +214,7 @@ iSaveParcial = 1;
 flagSaveFrac = ones(bombaProperties.nBombas,1);
 flagSaveISIP = ones(bombaProperties.nBombas,1);
 flagSaveProduccion = ones(bombaProperties.nBombas,1);
-restartKC    = 1; %ones(bombaProperties.nBombas,1);
+restartKC    = ones(bombaProperties.nBombas,1);
 productionKC = ones(bombaProperties.nBombas,1);
 
 iDeadFlag = 1;
@@ -457,13 +457,14 @@ while algorithmProperties.elapsedTime < temporalProperties.tiempoTotalCorrida
     display(iTime);
  
     %% Cambio de KC.
-    if restartKC==1 && iTime>temporalProperties.drainTimes
+    if restartKC(iFractura) ==1 && iTime>temporalProperties.drainTimes
         Kperm     = getMatrizPermeabilidad(physicalProperties,meshInfo,SRVProperties,'frac','Y' );                                                                                   % Luego de terminada una produccion (con permeabilidad de SRV), se vuelve a poner la permeabilidad (baja) de matriz.
         KC        = getTensor(meshInfo,paramDiscEle,pGaussParam,1,1,Kperm,'KC');
-        restartKC= 0;
+        restartKC(iFractura) = 0;
         KPermCell{size(KPermCell,1),1} = Kperm; 
         KPermCell{size(KPermCell,1),2} = [];
         KPermCell{size(KPermCell,1),3} = 'frac';
+        KPermCell{size(KPermCell,1),4} = iFractura;
         KPermCell{size(KPermCell,1)+1,1} = [];
     elseif strcmpi(SRVProperties.key,'Y') && productionKC(iFractura) == 1 && algorithmProperties.elapsedTime >= temporalProperties.tInicioProduccion(iFractura) % Se establece el valor de permeabilidad mas elevado para el SRV que se activa durante la produccion.
         if KeyInicioIsip
@@ -493,6 +494,7 @@ while algorithmProperties.elapsedTime < temporalProperties.tiempoTotalCorrida
         KPermCell{size(KPermCell,1),1} = Kperm;
         KPermCell{size(KPermCell,1),2} = auxSRV.elementsIndex;
         KPermCell{size(KPermCell,1),3} = 'produccion';
+        KPermCell{size(KPermCell,1),4} = iFractura;
         KPermCell{size(KPermCell,1)+1,1} = [];
     end
 

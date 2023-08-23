@@ -87,7 +87,7 @@ deltaT = 0.001
 deltaTMax = 30
 
 tiempoISIP = 120
-deltaTISIP = 0.1
+deltaTISIP = 40
 deltaTProduccionMax = 3600*24*180
 
 ---------------------------------------------------------------------------
@@ -108,9 +108,9 @@ precondCT = 1e7
 -Puede haber una o mas fracturas (la idea es que hayan al menos 2).
 Q =  [10 10; 10 10]
 -Cada fila es el tiempo de inyeccion en un nodo bomba
-tQ = [0 180; 0 180]
+tQ = [0 120; 0 120]
 -Cada fila es la posicion de un nodo bomba
-posNodoBomba = [152 152 114; 152 532 114]*1000
+posNodoBomba = [152 144 114; 152 504 114]*1000
 
 ---------------------------------------------------------------------------
 -Propiedades de los nodos monitores: [mm]
@@ -167,6 +167,6 @@ hPropantePorcentaje = 30
 -Volumen de SRV: [m][m][m]
 ---------------------------------------------------------------------------
 SRVKey = Y
-dX = [76 228; 76 228]
-dY = [76 228; 456 608]
-dZ = [76 152; 76 152]
+dX = [72 216; 72 216]
+dY = [72 216; 432 576]
+dZ = [72 148; 72 148]

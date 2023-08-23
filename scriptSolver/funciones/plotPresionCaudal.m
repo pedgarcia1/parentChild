@@ -66,7 +66,7 @@ xlim([tFinalISIPLocal tiempo(end)])
 grid
 yyaxis right
 plot(tiempo(iTimeFinalISIP-temporalProperties.drainTimes:end),QTimes(bombaProperties.nodoBomba(1),iTimeFinalISIP:end))
-ylim([QTimes(bombaProperties.nodoBomba(1),end)*1.1 0])
+% ylim([QTimes(bombaProperties.nodoBomba(iBomba),end)*1.1 0])
 ylabel('Q [BPM] ')
 
 end
